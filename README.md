@@ -15,3 +15,9 @@ clang++ Pass.o -fPIC -shared -isysroot $(xcrun --sdk macosx --show-sdk-path) $(l
 
 clang -isysroot $(xcrun --show-sdk-path) -Xclang -load -Xclang libPass.so -flegacy-pass-manager main.cpp $(llvm-config --ldflags --libs --system-libs) -lc++
 ```
+
+## Генерация графа
+
+```
+dot -Tpng assets/graph.dot -o assets/output.png
+```
