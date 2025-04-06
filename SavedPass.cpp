@@ -96,26 +96,41 @@ namespace {
       }
     }
 
-    const std::string kLoggerFunc = "logInstruction";
-    bool isFuncLogger(StringRef func) {
-      return func == kLoggerFunc;
+    void logFunction(Function& F) {
+      // Prepare builder for IR modification
+      LLVMContext& Ctx = F.getContext();
+      IRBuilder<> builder(Ctx);
+      Type* ret_type = Type::getVoidTy(Ctx);
+
+      // Prepare funcStartLogger function
+      ArrayRef<Type*> func_start_param_types = {builder.getInt8Ty()->getPointerTo()};
+      FunctionType* func_start_log_func_type = FunctionType::get(ret_type, func_start_param_types, false);
+      FunctionCallee func_start_log_func = F.getParent()->getOrInsertFunction("funcStartLogger",
+                                                                              func_start_log_func_type);
+
+      // Insert a call to funcStartLogger function in the function begin
+      BasicBlock& entryBB = F.getEntryBlock();
+      builder.SetInsertPoint(&entryBB.front());
+      Value* func_name = builder.CreateGlobalStringPtr(F.getName());
+      Value* args[] = {func_name};
+      builder.CreateCall(func_start_log_func, args);
     }
 
-    void logInstruction(Function& F, Instruction& I) {
+    void logInstruction(Instruction& I) {
+      IRBuilder<> builder(&I);
       LLVMContext& Ctx = I.getContext();
-      IRBuilder<> builder(Ctx);
+
+      std::string opcode_name = I.getOpcodeName();
+      //Value* instr_name = builder.CreateGlobalStringPtr(opcode_name);
 
       Type* ret_type = Type::getVoidTy(Ctx);
-      ArrayRef<Type*> log_instr_param_types = {builder.getInt8Ty()->getPointerTo()}; //Type::getInt8PtrTy(Ctx),
+      ArrayRef<Type*> log_instr_param_types = {}; //Type::getInt8PtrTy(Ctx),
                                                   //Type::getInt64PtrTy(Ctx)};
       FunctionType* log_instr_type = FunctionType::get(ret_type,
                                                        log_instr_param_types,
                                                        false);
-      FunctionCallee func_log_instr = F.getParent()->getOrInsertFunction(kLoggerFunc,
+      FunctionCallee func_log_instr = I.getModule()->getOrInsertFunction("logInstruction",
                                                                          log_instr_type);
-
-      //std::string opcode_name = I.getOpcodeName();
-      //Value* instr_name = builder.CreateGlobalStringPtr(opcode_name);
 
       /*GlobalVariable* counter = new GlobalVariable(
         *I.getModule(),
@@ -126,29 +141,24 @@ namespace {
         opcode_name + "_counter"
       );*/
 
-      if (auto* call = dyn_cast<CallInst>(&I)) {
-        builder.SetInsertPoint(call);
-
-        Function* callee = call->getCalledFunction();
-        if (callee && !isFuncLogger(callee->getName())) {
-          Value* opcode = builder.CreateGlobalStringPtr(call->getOpcodeName());
-          Value* args[] = {opcode};
-          builder.CreateCall(func_log_instr, args);
-        }
-      }
+      //builder.CreateCall(func_log_instr, {instr_name, counter});
     }
 
     virtual bool runOnFunction(Function& F) {
-      for (auto& B : F) {
+     for (auto& B : F) {
         // Basic Block iterations
         for (auto& I : B) {
           // Instruction iterations
           //defineNode(&I);
 
+          outs() << "next\n";
+
           I.print(outs(), true);
           outs() << "\n";
 
-          logInstruction(F, I);
+          logInstruction(I);
+
+          outs() << "log leaved\n";
 
           for (auto& U : I.operands()) {
             Value* op = U.get();
@@ -156,9 +166,14 @@ namespace {
             //defineNode(op);
             //constructEdge(op, I);
           }
+
+          outs() << "after operands cycle\n";
         }
       }
-      outs() << "return\n";
+
+      outs() << "returning\n";
+      outs().flush();
+
       return true;
     }
   };
