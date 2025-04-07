@@ -30,16 +30,16 @@ namespace {
     return result;
   }
 
-  struct MyPass : public FunctionPass {
+  struct GraphPass : public FunctionPass {
     static char ID;
-    MyPass() : FunctionPass(ID) {
+    GraphPass() : FunctionPass(ID) {
       outs() << "digraph structs {\n"
                 "graph[splines=true, overlap=false, pack=true];\n"
                 "node[shape=Mrecord, style=filled, fillcolor=\"lightgray\", color=\"black\", fontsize=20];\n"
                 "edge[color=\"darkblue\",fontcolor=\"yellow\",fontsize=12];\n\n";
     }
 
-    ~MyPass() {
+    ~GraphPass() {
       outs() << "}\n";
     }
 
@@ -179,13 +179,13 @@ namespace {
   };
 }
 
-char MyPass::ID = 0;
+char GraphPass::ID = 0;
 
 // Automatically enable the pass.
 // http://adriansampson.net/blog/clangpass.html
 static void registerMyPass(const PassManagerBuilder&,
                            legacy::PassManagerBase& PM) {
-  PM.add(new MyPass());
+  PM.add(new GraphPass());
 }
 static RegisterStandardPasses
     RegisterMyPass(PassManagerBuilder::EP_EarlyAsPossible,

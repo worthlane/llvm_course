@@ -1,14 +1,30 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-void funcStartLogger(char* func_name) {
-  printf("[LOG] Start function '%s'\n", func_name);
+static FILE* logf = NULL;
+static const char* kOutputFile = "assets/dynamic.log";
+
+void initLogFile();
+void closeLogFile();
+
+void initLogFile() {
+  printf("initted %p\n", logf);
+
+  logf = fopen(kOutputFile, "w");
+
+  if (logf == NULL)
+      logf = stderr;
+
+  atexit(closeLogFile);
 }
 
-/*void logInstruction(const char* opcode, int64_t* counter) {
+void closeLogFile() {
+  fclose(logf);
+}
+
+void logInstruction(char* opcode_name, long int* counter, unsigned int id) {
   (*counter)++;
-  printf("[LOG] Start instruction '%s', used %lld times\n", opcode, *counter);
-}*/
-
-void logInstruction(char* opcode) {
-  printf("[LOG] Start instruction '%s'\n", opcode);
+  fprintf(logf, "%u '%s' counter: %ld\n", id, opcode_name, *counter);
+  fflush(logf);
 }
+

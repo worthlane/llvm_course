@@ -1,7 +1,13 @@
 #include <iostream>
 
+// this is an example program, which would be compiled with my pass
+
 int main() {
-  std::cout << "Hello, World\n";
+  int a = 100;
+
+  while (a--) {
+    std::cout << "a\n";
+  }
 
   return 0;
 }
