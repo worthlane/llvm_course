@@ -66,11 +66,11 @@ int main() {
 
 Полученный def-use граф будет выглядеть примерно так:
 
-![](/readme_assets/simple/output.png)
+<img src="readme_assets/simple/output.png" width="400" alt="Centered Image">
 
 Используем python скрипт, чтобы раскрасить вершины
 
-![](/readme_assets/simple/dynamic_output.png)
+<img src="readme_assets/simple/dynamic_output.png" width="400" alt="Centered Image">
 
 Как можно заметить, все вершины, связанные с инструкциями, окрашены в красный. Это связано с тем, что все инструкции были выполнены одинаковое количество раз.
 
@@ -95,10 +95,14 @@ int main() {
 
 Результатом будет граф
 
-![](/readme_assets/cycle/dynamic_output.png)
+<img src="readme_assets/cycle/dynamic_output.png" width="400" alt="Centered Image">
 
 Здесь мы уже можем заметить более разнообразные цвета. Так как циклы в примере исполняются за разное количество операций, некоторые вершины в графе более красные, чем другие.
 
 В папке [examples](examples) можно найти примеры работы пасса на тяжеловесных программах (я брал сложновычислимые задачи из контеста). Так как в ридми подобные картинки будет очень сложно разглядеть.
+
+Например, один из примеров выглядит как то так:
+<img src="readme_assets/heavy_result.png" width="400" alt="Centered Image">
+
 
 
