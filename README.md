@@ -34,14 +34,14 @@ clang++ Pass.o log.o -fPIC -shared -isysroot $(xcrun --sdk macosx --show-sdk-pat
 
 Теперь мы можем скомпилировать саму программу, с использованием нашего пасса.
 ```
-clang -isysroot $(xcrun --show-sdk-path) -Xclang -load -Xclang libPass.so -flegacy-pass-manager main.cpp log.o $(llvm-config --ldflags --libs --system-libs) -lc++ >> assets/graph.dot
+clang -isysroot $(xcrun --show-sdk-path) -Xclang -load -Xclang libPass.so -flegacy-pass-manager main.cpp log.o $(llvm-config --ldflags --libs --system-libs) -lc++
 ```
 
 ### Генерация графа
 
 Имея dot файл, можем сгенерировать граф в формате png.
 ```
-dot -Tpng assets/graph.dot -o assets/output.png
+dot -Tpng [dot_file] -o [resulted_png]
 ```
 
 Имея динамическую информацию по инструкциям, после исполнения программы, можем получить раскрашенный def-use граф. Раскрашен по принципу: Более красные вершины исполнялись чаще, чем более зеленые. Получить данный граф можем с помощью python скрипта.
