@@ -8,7 +8,7 @@
 brew install llvm@14
 ```
 
-После установки, нужно настроить окружение.
+После установки нужно настроить окружение.
 ```
 export PATH="/opt/homebrew/opt/llvm@14/bin:$PATH"
 export LDFLAGS="-L/opt/homebrew/opt/llvm@14/lib"
