@@ -8,8 +8,6 @@ void initLogFile();
 void closeLogFile();
 
 void initLogFile() {
-  printf("initted %p\n", logf);
-
   logf = fopen(kOutputFile, "w");
 
   if (logf == NULL)
@@ -23,6 +21,8 @@ void closeLogFile() {
 }
 
 void logInstruction(char* opcode_name, long int* counter, unsigned int id) {
+  if (!logf) initLogFile();
+
   (*counter)++;
   fprintf(logf, "%u '%s' counter: %ld\n", id, opcode_name, *counter);
   fflush(logf);

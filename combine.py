@@ -34,6 +34,17 @@ def shouldNotChangeColor(node_id, label):
 
   return False
 
+def calculate_color(normalized):
+  if normalized <= 0.5:
+    r = int(2 * normalized * 255)
+    g = 255
+  else:
+    r = 255
+    g = int(2 * (1 - normalized) * 255)
+
+  b = 0
+  return f"#{r:02x}{g:02x}{b:02x}"
+
 def processDotFile(dot_file, counter_dict, output_file):
   if not counter_dict:
     max_count = 1
@@ -55,9 +66,7 @@ def processDotFile(dot_file, counter_dict, output_file):
           count = counter_dict.get(node_id, 0)
           escaped_label = label.replace('"', '\\"')
           normalized = count / max_count
-          r = int(kRGBMax * normalized)
-          g = int(kRGBMax * (1 - normalized))
-          hex_color = f"#{r:02x}{g:02x}00"
+          hex_color = calculate_color(normalized)
 
           new_line = f'{node_id} [label="{escaped_label}"{attrs}, fillcolor="{hex_color}", style=filled]\n'
           line = new_line

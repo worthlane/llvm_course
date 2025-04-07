@@ -1,5 +1,7 @@
 # LLVM Pass
-## Установка LLVM
+## Структура пасса
+## Конфигурация
+### Установка LLVM
 
 Работа выполнялась на Apple MacBook Pro M2, для начала нужно было установить сам llvm, я выбрал 14 версию чтобы было комфортнее работать с ```llvm::legacy::PassManager```.
 ```
@@ -13,7 +15,7 @@ export LDFLAGS="-L/opt/homebrew/opt/llvm@14/lib"
 export CPPFLAGS="-I/opt/homebrew/opt/llvm@14/include"
 ```
 
-## Сборка пасса
+### Сборка пасса
 
 Сначала мы компилируем вспомогательный файл ```log.c```, содержащий логирующие функции для пасса.
 ```
@@ -35,14 +37,12 @@ clang++ Pass.o log.o -fPIC -shared -isysroot $(xcrun --sdk macosx --show-sdk-pat
 clang -isysroot $(xcrun --show-sdk-path) -Xclang -load -Xclang libPass.so -flegacy-pass-manager main.cpp log.o $(llvm-config --ldflags --libs --system-libs) -lc++ >> assets/graph.dot
 ```
 
-## Генерация графа
+### Генерация графа
 
 Имея dot файл, можем сгенерировать граф в формате png.
 ```
 dot -Tpng assets/graph.dot -o assets/output.png
 ```
-
-![](/assets/output.png)
 
 Имея динамическую информацию по инструкциям, после исполнения программы, можем получить раскрашенный def-use граф. Раскрашен по принципу: Более красные вершины исполнялись чаще, чем более зеленые. Получить данный граф можем с помощью python скрипта.
 
@@ -50,4 +50,55 @@ dot -Tpng assets/graph.dot -o assets/output.png
 python3 combine.py
 ```
 
-![](/assets/dynamic_output.png)
+## Пример работы
+
+Проверим всё на простенькой программе, например:
+```cpp
+int main() {
+  int a = 0;
+  int b = 1;
+
+  a = ++a - b;
+
+  return --a;
+}
+```
+
+Полученный def-use граф будет выглядеть примерно так:
+
+![](/readme_assets/simple/output.png)
+
+Используем python скрипт, чтобы раскрасить вершины
+
+![](/readme_assets/simple/dynamic_output.png)
+
+Как можно заметить, все вершины, связанные с инструкциями, окрашены в красный. Это связано с тем, что все инструкции были выполнены одинаковое количество раз.
+
+Попробуем на другом примере:
+
+```cpp
+int main() {
+  int a = 0;
+  a += 2;
+
+  int b = 100;
+  while (--b) {
+  }
+
+  int c = 40;
+  while (--c) {
+  }
+
+  return 0;
+}
+```
+
+Результатом будет граф
+
+![](/readme_assets/cycle/dynamic_output.png)
+
+Здесь мы уже можем заметить более разнообразные цвета. Так как циклы в примере исполняются за разное количество операций, некоторые вершины в графе более красные, чем другие.
+
+В папке [examples](examples) можно найти примеры работы пасса на тяжеловесных программах (я брал сложновычислимые задачи из контеста). Так как в ридми подобные картинки будет очень сложно разглядеть.
+
+

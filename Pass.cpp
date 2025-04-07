@@ -38,9 +38,7 @@ namespace {
     std::ofstream dot;
     const std::string kFileName       = "assets/graph.dot";
     const std::string kLoggerFunc     = "logInstruction";
-    const std::string kLogInitializer = "initLogFile";
 
-    bool   log_file_initted_{false};
     size_t last_constant_id_{0};
 
     GraphPass() : FunctionPass(ID) {
@@ -56,25 +54,6 @@ namespace {
       dot << "}\n";
 
       dot.close();
-    }
-
-    void initLogFile(Function& F) {
-      if (log_file_initted_)
-        return;
-
-      LLVMContext& Ctx = F.getContext();
-      IRBuilder<> builder(Ctx);
-
-      ArrayRef<Type*> init_param_types = {};
-      FunctionType* init_type = FunctionType::get(builder.getVoidTy(), init_param_types, false);
-      FunctionCallee init_func = F.getParent()->getOrInsertFunction(kLogInitializer, init_type);
-
-      BasicBlock& entry_BB = F.getEntryBlock();
-      builder.SetInsertPoint(&entry_BB.front());
-
-      builder.CreateCall(init_func);
-
-      log_file_initted_ = true;
     }
 
     std::string getBasicBlockLabel(BasicBlock* B) {
@@ -130,7 +109,7 @@ namespace {
     }
 
     bool isFuncLogger(StringRef func) {
-      return func == kLoggerFunc || func == kLogInitializer;
+      return func == kLoggerFunc;
     }
 
     void insertLogInstruction(IRBuilder<>& builder, LLVMContext& Ctx,
@@ -187,8 +166,6 @@ namespace {
     }
 
     virtual bool runOnFunction(Function& F) {
-      initLogFile(F);
-
       for (auto& B : F) {
         // Basic Block iterations
         for (auto& I : B) {
