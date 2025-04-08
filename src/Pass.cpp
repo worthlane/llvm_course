@@ -36,8 +36,8 @@ namespace {
     static char ID;
 
     std::ofstream dot;
-    const std::string kFileName       = "assets/graph.dot";
-    const std::string kLoggerFunc     = "logInstruction";
+    const std::string kFileName   = "assets/graph.dot";
+    const std::string kLoggerFunc = "logInstruction";
 
     size_t last_constant_id_{0};
 
@@ -49,6 +49,14 @@ namespace {
                 "node[shape=Mrecord, style=filled, fillcolor=\"lightgray\", color=\"black\", fontsize=20];\n"
                 "edge[color=\"darkblue\",fontcolor=\"yellow\",fontsize=12];\n\n";
     }
+
+    // Non-movable
+    GraphPass(GraphPass&&) = delete;
+    GraphPass& operator=(GraphPass&&) = delete;
+
+    // Non-copyable
+    GraphPass(const GraphPass&) = delete;
+    GraphPass& operator=(const GraphPass&) = delete;
 
     ~GraphPass() {
       dot << "}\n";
