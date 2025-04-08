@@ -44,4 +44,19 @@ void GraphBuilder::constructEdge(const NodeId start, const NodeId end) {
   dot_stream_ << start << " -> " << end << "\n";
 }
 
+void GraphBuilder::startSubgraph(const std::string& label) {
+  std::string name = nameInDotFormat(label);
+
+  dot_stream_ << "subgraph cluster_" << name << " {\n"
+                 "label=\"" << name << "\";\n"
+                 "color=\"black\";\n"
+                 "style=\"solid\";\n"
+                 "fontsize=20;\n";
+
+}
+
+void GraphBuilder::endSubgraph() {
+  dot_stream_ << "}\n";
+}
+
 } // namespace visual

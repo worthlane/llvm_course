@@ -135,8 +135,14 @@ namespace {
     }
 
     virtual bool runOnFunction(Function& F) {
+
+      std::string func_name = F.hasName() ? F.getName().str() : "unnamed_func";
+      graph_.startSubgraph(func_name);
+
       for (auto& B : F) {
         // Basic Block iterations
+        //graph_.startSubgraph(getBasicBlockLabel(&B));
+
         for (auto& I : B) {
           // Instruction iterations
           logInstruction(F, I);
@@ -150,7 +156,12 @@ namespace {
             constructEdge(op, I);
           }
         }
+
+        //graph_.endSubgraph();
       }
+
+      graph_.endSubgraph();
+
       return true;
     }
   };

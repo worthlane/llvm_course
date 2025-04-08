@@ -23,6 +23,9 @@ class GraphBuilder {
   void defineNode(const NodeId id, const std::string& label);
   void constructEdge(const NodeId start, const NodeId end);
 
+  void startSubgraph(const std::string& label);
+  void endSubgraph();
+
  private:
   std::ofstream dot_stream_;
 };
