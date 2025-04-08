@@ -8,61 +8,24 @@
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
 
+#include "GraphBuilder.hpp"
+
 #include <fstream>
 
 using namespace llvm;
 
 namespace {
-  static std::string nameInDotFormat(const std::string& name) {
-    std::string result;
-
-    static const size_t kMaxSymbols = 100;
-
-    size_t cnt = 0;
-    for (char c : name) {
-      if (c == '"' || c == '\\' || c == '<' || c == '>' || c == '{' || c == '}' || c == '|') {
-        result += '\\';
-      }
-      result += c;
-
-      if (++cnt > kMaxSymbols)
-        break;
-    }
-
-    return result;
-  }
-
   struct GraphPass : public FunctionPass {
     static char ID;
 
-    std::ofstream dot;
     const std::string kFileName   = "assets/graph.dot";
     const std::string kLoggerFunc = "logInstruction";
 
+    visual::GraphBuilder graph_{kFileName};
+
     size_t last_constant_id_{0};
 
-    GraphPass() : FunctionPass(ID) {
-      dot.open(kFileName);
-
-      dot << "digraph structs {\n"
-                "graph[splines=true, overlap=false, pack=true];\n"
-                "node[shape=Mrecord, style=filled, fillcolor=\"lightgray\", color=\"black\", fontsize=20];\n"
-                "edge[color=\"darkblue\",fontcolor=\"yellow\",fontsize=12];\n\n";
-    }
-
-    // Non-movable
-    GraphPass(GraphPass&&) = delete;
-    GraphPass& operator=(GraphPass&&) = delete;
-
-    // Non-copyable
-    GraphPass(const GraphPass&) = delete;
-    GraphPass& operator=(const GraphPass&) = delete;
-
-    ~GraphPass() {
-      dot << "}\n";
-
-      dot.close();
-    }
+    GraphPass() : FunctionPass(ID) {}
 
     std::string getBasicBlockLabel(BasicBlock* B) {
       std::string str;
@@ -80,19 +43,19 @@ namespace {
     }
 
     std::string getName(Value* V) {
-      std::string dot_name;
+      std::string name;
 
       if (Instruction* I = dyn_cast<Instruction>(V)) {
-        dot_name = std::string(I->getOpcodeName());
+        name = std::string(I->getOpcodeName());
       } else if (BasicBlock* B = dyn_cast<BasicBlock>(V)) {
-        dot_name = getBasicBlockLabel(B);
+        name = getBasicBlockLabel(B);
       } else if (V->hasName()) {
-        dot_name = V->getName().str();
+        name = V->getName().str();
       } else {
-        dot_name = getDumpedValue(V);
+        name = getDumpedValue(V);
       }
 
-      return nameInDotFormat(dot_name);
+      return name;
     }
 
     unsigned int getNodeID(Value* V) {
@@ -103,13 +66,11 @@ namespace {
     }
 
     void defineNode(Value* V) {
-      dot << getNodeID(V) << " [label=\"" << getName(V) << "\"];\n";
+      graph_.defineNode(getNodeID(V), getName(V));
     }
 
     void constructEdge(Value* start, Instruction& end) {
-      size_t weight = 1;
-
-      dot << getNodeID(start) << " -> " << getNodeID(&end) << "[weight=" << weight << "]\n";
+      graph_.constructEdge(getNodeID(start), getNodeID(&end));
 
       if (isa<Constant>(*start)) {
         last_constant_id_++; // cloning constants to simplify graph

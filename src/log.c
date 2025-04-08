@@ -7,6 +7,8 @@ static const char* kOutputFile = "assets/dynamic.log";
 void initLogFile();
 void closeLogFile();
 
+void logInstruction(char* opcode_name, long int* counter, unsigned int id);
+
 void initLogFile() {
   logf = fopen(kOutputFile, "w");
 
